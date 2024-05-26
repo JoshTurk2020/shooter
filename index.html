@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>2D Shooter Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #game {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background-color: #000;
+      touch-action: none;
+    }
+
+    #player {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      background-color: #0f0;
+      border-radius: 50%;
+    }
+
+    .bullet {
+      position: absolute;
+      width: 5px;
+      height: 10px;
+      background-color: #ff0;
+    }
+
+    .enemy {
+      position: absolute;
+      top: 0;
+      width: 40px;
+      height: 40px;
+      background-color: #f00;
+      border-radius: 50%;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #fff;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="player"></div>
+    <div id="bullets"></div>
+    <div id="enemies"></div>
+    <div id="score">Score: <span>0</span></div>
+  </div>
+
+  <script>
+    const player = document.getElementById('player');
+    const bullets = document.getElementById('bullets');
+    const enemies = document.getElementById('enemies');
+    const scoreElement = document.getElementById('score').querySelector('span');
+
+    let playerX = 0;
+    let score = 0;
+
+    function movePlayer(event) {
+      const touch = event.touches[0];
+      const touchX = touch.clientX;
+      const gameWidth = document.getElementById('game').offsetWidth;
+      const playerWidth = player.offsetWidth;
+      
+      playerX = touchX - playerWidth / 2;
+      
+      if (playerX < 0) {
+        playerX = 0;
+      } else if (playerX > gameWidth - playerWidth) {
+        playerX = gameWidth - playerWidth;
+      }
+      
+      player.style.left = playerX + 'px';
+    }
+
+    function createBullet() {
+      const bullet = document.createElement('div');
+      bullet.classList.add('bullet');
+      bullet.style.left = playerX + player.offsetWidth / 2 - bullet.offsetWidth / 2 + 'px';
+      bullet.style.bottom = player.offsetTop + 'px';
+      bullets.appendChild(bullet);
+    }
+
+    function createEnemy() {
+      const enemy = document.createElement('div');
+      enemy.classList.add('enemy');
+      enemy.style.left = Math.random() * (document.getElementById('game').offsetWidth - enemy.offsetWidth) + 'px';
+      enemies.appendChild(enemy);
+    }
+
+    function updateGame() {
+      // Move bullets
+      const bulletElements = bullets.querySelectorAll('.bullet');
+      bulletElements.forEach(bullet => {
+        const bulletTop = bullet.offsetTop;
+        bullet.style.top = bulletTop - 5 + 'px';
+        
+        if (bulletTop < 0) {
+          bullets.removeChild(bullet);
+        }
+      });
+      
+      // Move enemies
+      const enemyElements = enemies.querySelectorAll('.enemy');
+      enemyElements.forEach(enemy => {
+        const enemyTop = enemy.offsetTop;
+        enemy.style.top = enemyTop + 2 + 'px';
+        
+        if (enemyTop > document.getElementById('game').offsetHeight) {
+          enemies.removeChild(enemy);
+        }
+        
+        // Check collision with bullets
+        bulletElements.forEach(bullet => {
+          const bulletRect = bullet.getBoundingClientRect();
+          const enemyRect = enemy.getBoundingClientRect();
+          
+          if (
+            bulletRect.left < enemyRect.right &&
+            bulletRect.right > enemyRect.left &&
+            bulletRect.top < enemyRect.bottom &&
+            bulletRect.bottom > enemyRect.top
+          ) {
+            enemies.removeChild(enemy);
+            bullets.removeChild(bullet);
+            score++;
+            scoreElement.textContent = score;
+          }
+        });
+      });
+      
+      requestAnimationFrame(updateGame);
+    }
+
+    function startGame() {
+      document.getElementById('game').addEventListener('touchmove', movePlayer);
+      document.getElementById('game').addEventListener('touchstart', createBullet);
+      
+      setInterval(createEnemy, 1000);
+      
+      updateGame();
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
