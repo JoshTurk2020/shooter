@@ -91,7 +91,7 @@
       const bullet = document.createElement('div');
       bullet.classList.add('bullet');
       bullet.style.left = playerX + player.offsetWidth / 2 - bullet.offsetWidth / 2 + 'px';
-      bullet.style.bottom = player.offsetTop + 'px';
+      bullet.style.top = player.offsetTop - bullet.offsetHeight + 'px';
       bullets.appendChild(bullet);
     }
 
